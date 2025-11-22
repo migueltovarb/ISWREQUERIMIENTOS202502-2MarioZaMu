@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Publicar Oferta - Bolsa de Trabajo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Publicar Nueva Oferta Laboral</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Título del Puesto *</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="text-danger small">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tipo de Contrato *</label>
+                                {{ form.contract_type }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ubicación *</label>
+                                {{ form.location }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Salario (OPCIONAL)</label>
+                            {{ form.salary }}
+                            <div class="form-text">Ingresa el salario en pesos colombianos</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción del Puesto *</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Describe las responsabilidades y funciones del puesto</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Requisitos *</label>
+                            {{ form.requirements }}
+                            {% if form.requirements.errors %}
+                                <div class="text-danger small">{{ form.requirements.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Lista los requisitos, habilidades y experiencia necesaria</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Publicar Oferta
+                            </button>
+                            <a href="{% url 'job_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    label {
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}

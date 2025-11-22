@@ -1,0 +1,137 @@
+import datetime
+
+# ---------------------------
+# Datos iniciales
+# ---------------------------
+
+# Lista de libros en la biblioteca (cada libro tiene: título, cantidad disponible)
+libros = {
+    "Python Básico": 3,
+    "Algoritmos en C": 2,
+    "Bases de Datos": 1
+}
+
+# Registro de préstamos (para este ejemplo lo guardaremos en una lista)
+prestamos = []
+
+# Usuario que ingresa al sistema (bibliotecario)
+def login():
+    usuario = input("Ingrese su usuario de bibliotecario: ")
+    contraseña = input("Ingrese su contraseña: ")
+    # Nota: Aquí no validamos en base de datos, solo simulamos.
+    print(f"\n¡Bienvenido, {usuario}! ✅\n")
+    return usuario
+
+
+# ---------------------------
+# Funciones principales
+# ---------------------------
+
+def mostrar_libros():
+    print("\n--- Libros disponibles ---")
+    for titulo, cantidad in libros.items():
+        print(f"{titulo} - disponibles: {cantidad}")
+
+
+def prestar_libro(bibliotecario):
+    mostrar_libros()
+    libro = input("\nIngrese el título del libro que quiere prestar: ")
+
+    if libro not in libros:
+        print("❌ Ese libro no existe en el catálogo.")
+        return
+
+    if libros[libro] == 0:
+        print("❌ Ese libro ya está prestado (sin copias disponibles).")
+        return
+
+    usuario_id = input("Ingrese la cédula o carnet del usuario: ")
+    tipo = input("¿Es Estudiante (E) o Profesor (P)? ").upper()
+
+    # Calcular fechas
+    hoy = datetime.date.today()
+    if tipo == "E":
+        devolucion = hoy + datetime.timedelta(days=7)
+    elif tipo == "P":
+        devolucion = hoy + datetime.timedelta(days=14)
+    else:
+        print("❌ Tipo de usuario inválido.")
+        return
+
+    confirmar = input("¿Confirmar préstamo? (s/n): ").lower()
+    if confirmar != "s":
+        print("Operación cancelada.")
+        return
+
+    # Actualizar disponibilidad
+    libros[libro] -= 1
+
+    # Guardar préstamo
+    registro = {
+        "usuario": usuario_id,
+        "tipo": tipo,
+        "libro": libro,
+        "fecha_inicio": hoy,
+        "fecha_fin": devolucion,
+        "bibliotecario": bibliotecario
+    }
+    prestamos.append(registro)
+
+    # Simular "guardar en archivo" → aquí solo mostramos en pantalla
+    print("\n--- RECIBO ---")
+    print(f"Libro: {libro}")
+    print(f"Usuario: {usuario_id} ({tipo})")
+    print(f"Fecha inicio: {hoy}")
+    print(f"Fecha fin: {devolucion}")
+    print("-----------------------\n")
+
+
+def devolver_libro():
+    usuario_id = input("Ingrese la cédula/carnet del usuario: ")
+    libro = input("Ingrese el título del libro que devuelve: ")
+
+    for registro in prestamos:
+        if registro["usuario"] == usuario_id and registro["libro"] == libro:
+            prestamos.remove(registro)
+            libros[libro] += 1
+            print("\n✅ Libro devuelto correctamente.\n")
+            return
+
+    print("❌ No se encontró ese préstamo.")
+
+
+# ---------------------------
+# Menú principal
+# ---------------------------
+
+def menu():
+    bibliotecario = login()
+
+    while True:
+        print("=== Menú Biblioteca Express ===")
+        print("1. Ver libros disponibles")
+        print("2. Prestar libro")
+        print("3. Devolver libro")
+        print("4. Salir")
+
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            mostrar_libros()
+        elif opcion == "2":
+            prestar_libro(bibliotecario)
+        elif opcion == "3":
+            devolver_libro()
+        elif opcion == "4":
+            print("👋 Hasta luego.")
+            break
+        else:
+            print("❌ Opción inválida, intente de nuevo.")
+
+
+# ---------------------------
+# Punto de entrada del programa
+# ---------------------------
+
+if __name__ == "__main__":
+    menu()

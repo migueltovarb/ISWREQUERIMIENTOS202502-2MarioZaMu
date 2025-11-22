@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Empresas - Bolsa de Trabajo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="bi bi-building"></i> Empresas Registradas
+            </h1>
+        </div>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" placeholder="Buscar empresa por nombre...">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100">Buscar Empresas</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Empresas -->
+    <div class="row">
+        {% for company in companies %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card company-card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-building" style="font-size: 3rem; color: #003366;"></i>
+                    </div>
+                    <h5 class="card-title">{{ company.company_name }}</h5>
+                    
+                    {% if company.description %}
+                    <p class="card-text text-muted small">
+                        {{ company.description|truncatewords:20 }}
+                    </p>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <p class="small mb-1">
+                            <i class="bi bi-envelope text-muted"></i> {{ company.contact_email }}
+                        </p>
+                        {% if company.website %}
+                        <p class="small mb-2">
+                            <i class="bi bi-globe text-muted"></i> 
+                            <a href="{{ company.website }}" target="_blank">Sitio web</a>
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-3">
+                        <span class="badge bg-primary">
+                            {{ company.joboffer_set.count }} ofertas activas
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent text-center">
+                    <a href="{% url 'company_detail' company.id %}" class="btn btn-outline-primary btn-sm">
+                        Ver Detalles
+                    </a>
+                    <a href="{% url 'job_list' %}?company={{ company.id }}" class="btn btn-outline-secondary btn-sm">
+                        Ver Ofertas
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="bi bi-building" style="font-size: 3rem; color: #6c757d;"></i>
+                <h4 class="mt-3 text-muted">No hay empresas registradas</h4>
+                <p class="text-muted">Sé la primera empresa en unirse a nuestra plataforma.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .company-card {
+        transition: transform 0.2s;
+        border: none;
+    }
+    .company-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

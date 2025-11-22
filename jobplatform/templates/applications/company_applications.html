@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Postulaciones - Bolsa de Trabajo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-people"></i> 
+                    {% if current_job %}
+                        Postulaciones para: {{ current_job.title }}
+                    {% else %}
+                        Postulaciones Recibidas
+                    {% endif %}
+                </h1>
+                <a href="{% url 'my_company_jobs' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Volver a Mis Ofertas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <select class="form-control" onchange="location = this.value;">
+                                <option value="{% url 'company_applications' %}">Todas las ofertas</option>
+                                {% for job in request.user.company.joboffer_set.all %}
+                                <option value="{% url 'company_applications_job' job.id %}" 
+                                        {% if current_job and current_job.id == job.id %}selected{% endif %}>
+                                    {{ job.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-control" id="statusFilter">
+                                <option value="">Todos los estados</option>
+                                <option value="applied">Postulado</option>
+                                <option value="review">En Revisión</option>
+                                <option value="interview">Entrevista</option>
+                                <option value="rejected">Rechazado</option>
+                                <option value="hired">Contratado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Buscar candidato..." id="searchCandidate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Postulaciones -->
+    <div class="card shadow">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Candidatos Postulados</h5>
+            <span class="badge bg-primary">{{ applications.count }} postulaciones</span>
+        </div>
+        <div class="card-body">
+            {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Candidato</th>
+                            <th>Puesto</th>
+                            <th>Fecha Postulación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>
+                                <strong>{{ app.candidate.user.get_full_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ app.candidate.user.email }}</small>
+                            </td>
+                            <td>
+                                {% if not current_job %}
+                                <strong>{{ app.job_offer.title }}</strong>
+                                {% else %}
+                                {{ app.job_offer.title }}
+                                {% endif %}
+                            </td>
+                            <td>{{ app.applied_date|date:"d M Y" }}</td>
+                            <td>
+                                <select class="form-select form-select-sm status-select" 
+                                        data-application-id="{{ app.id }}"
+                                        style="width: auto;">
+                                    {% for status_value, status_label in app.STATUS_CHOICES %}
+                                    <option value="{{ status_value }}" 
+                                            {% if app.status == status_value %}selected{% endif %}>
+                                        {{ status_label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary view-candidate" 
+                                        data-candidate-id="{{ app.candidate.id }}">
+                                    <i class="bi bi-eye"></i> Ver CV
+                                </button>
+                                <button class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-envelope"></i> Contactar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people" style="font-size: 3rem; color: #6c757d;"></i>
+                <h4 class="mt-3 text-muted">No hay postulaciones</h4>
+                <p class="text-muted">
+                    {% if current_job %}
+                        Aún no hay candidatos postulados para esta oferta.
+                    {% else %}
+                        No has recibido postulaciones para tus ofertas.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para cambiar estados -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cambiar estado de postulación
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const applicationId = this.dataset.applicationId;
+            const newStatus = this.value;
+            
+            fetch(`/applications/update-status/${applicationId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `status=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Opcional: mostrar notificación
+                    console.log('Estado actualizado:', data.new_status);
+                } else {
+                    alert('Error al actualizar el estado');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error de conexión');
+                location.reload();
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
